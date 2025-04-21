@@ -28,7 +28,7 @@
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).  
+This project is licensed under the [MIT License](LICENSE.txt).  
 Created and maintained by **Kenan Karaçayır**.
 
 ---
