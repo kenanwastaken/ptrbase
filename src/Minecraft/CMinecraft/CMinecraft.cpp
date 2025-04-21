@@ -1,48 +1,35 @@
 #include "CMinecraft.h"
-#include "../JVM/JVM.h"
+#include "../../Java/CField/CField.h"
+#include "../../Java/JVM/JVM.h"
+#include <iostream>
 
-CMinecraft::CMinecraft()
+CMinecraft CMinecraft::GetMinecraft()
 {
-	jfieldID field = g_JVM->m_Env->GetStaticFieldID(mcClass.Class(), "theMinecraft", "Lnet/minecraft/client/Minecraft;");
-	this->mcObj = CObject(g_JVM->m_Env->GetStaticObjectField(mcClass.Class(), field));
+	CClass m_Class = CClass("net.minecraft.client.Minecraft");
+	return CMinecraft(CField(m_Class, m_Class.GetStaticFieldID("theMinecraft", "Lnet/minecraft/client/Minecraft;")).GetStaticObject());
 }
 
-CClass CMinecraft::GetClass()
+CWorldClient CMinecraft::GetWorld()
 {
-	return this->mcClass;
+	return CWorldClient(CField(GetObj(), m_Class.GetFieldID("theWorld", "Lnet/minecraft/client/multiplayer/WorldClient;")).GetObject());
 }
 
-CObject CMinecraft::GetMinecraft()
+CGameSettings CMinecraft::GetSettings()
 {
-	return this->mcObj;
+	return CGameSettings(CField(GetObj(), m_Class.GetFieldID("gameSettings", "Lnet/minecraft/client/settings/GameSettings;")).GetObject());
 }
 
-jboolean CMinecraft::IsInGame()
+CEntityPlayer CMinecraft::GetLocalPlayer()
 {
-	return this->GetLocalPlayer().Instance().Obj() == NULL ? JNI_FALSE : JNI_TRUE;
+	return CEntityLivingBase(CField(GetObj(), m_Class.GetFieldID("thePlayer", "Lnet/minecraft/client/entity/EntityPlayerSP;")).GetObject());
 }
 
-CPlayer CMinecraft::GetLocalPlayer()
+jint CMinecraft::GetRightClickTimer()
 {
-	jfieldID getPlayer = g_JVM->m_Env->GetFieldID(mcClass.Class(), "thePlayer", "Lnet/minecraft/client/entity/EntityPlayerSP;");
-	jobject localPlayer = g_JVM->m_Env->GetObjectField(mcObj.Obj(), getPlayer);
-
-	return CPlayer(localPlayer);
+	return CField(GetObj(), m_Class.GetFieldID("rightClickDelayTimer", "I")).GetInt();
 }
 
-jint CMinecraft::GetRightClickDelay()
+void CMinecraft::SetRightClickTimer(jint delay)
 {
-	jfieldID rcd = g_JVM->m_Env->GetFieldID(mcClass.Class(), "rightClickDelayTimer", "I");
-	return g_JVM->m_Env->GetIntField(mcObj.Obj(), rcd);
-}
-
-void CMinecraft::SetRightClickDelay(jint delay)
-{
-	jfieldID rcd = g_JVM->m_Env->GetFieldID(mcClass.Class(), "rightClickDelayTimer", "I");
-	g_JVM->m_Env->SetIntField(mcObj.Obj(), rcd, delay);
-}
-
-CMovingObjectPosition CMinecraft::GetObjectMouseOver()
-{
-	return CMovingObjectPosition(g_JVM->m_Env->GetObjectField(mcObj.Obj(), g_JVM->m_Env->GetFieldID(mcClass.Class(), "objectMouseOver", "Lnet/minecraft/util/MovingObjectPosition;")));
+	CField(GetObj(), m_Class.GetFieldID("rightClickDelayTimer", "I")).SetInt(delay);
 }

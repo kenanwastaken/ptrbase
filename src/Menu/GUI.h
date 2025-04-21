@@ -1,21 +1,15 @@
-#ifndef GUI_H_
-#define GUI_H_
-
-#include <cstdio>
+#ifndef _GUI_H_
+#define _GUI_H_
 
 #include <Windows.h>
-#include <ImGui/imgui.h>
-#include <ImGui/imgui_impl_win32.h>
-#include <ImGui/imgui_impl_opengl3.h>
+#include <imgui.h>
 
 namespace GUI
 {
-	bool init(HWND wnd_handle);
-	void shutdown();
+	void Init(HWND wnd_handle);
+	void Shutdown();
 
 	void Render();
-
-	bool getIsInit();
 }
 
 #endif

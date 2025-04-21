@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -70,6 +70,22 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)output\$(Platform)\$(Configuration)\intermediates\</IntDir>
+    <IncludePath>$(SolutionDir)external\include\imgui\;$(SolutionDir)external\include\jni\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)external\lib\jni\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)output\$(Platform)\$(Configuration)\intermediates\</IntDir>
+    <IncludePath>$(SolutionDir)external\include\imgui\;$(SolutionDir)external\include\jni\;$(SolutionDir)external\include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)external\lib\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+    <VcpkgEnableManifest>false</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -113,12 +129,13 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>jvm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,10 +146,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;PTRHACK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,42 +157,75 @@
       <OptimizeReferences Condition="'$(UseDynamicDebugging)' != 'true'">true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>jvm.lib;opengl32.lib;imgui.lib;libMinHook-x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="external\include\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="external\include\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="external\include\imgui\imgui.cpp" />
+    <ClCompile Include="external\include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="external\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="external\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="external\include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Helpers\Math\Math.cpp" />
+    <ClCompile Include="src\Java\CClass\CClass.cpp" />
+    <ClCompile Include="src\Java\CField\CField.cpp" />
+    <ClCompile Include="src\Java\CMethod\CMethod.cpp" />
+    <ClCompile Include="src\Java\CObject\CObject.cpp" />
     <ClCompile Include="src\Menu\GUI.cpp" />
     <ClCompile Include="src\Menu\MenuHook.cpp" />
-    <ClCompile Include="src\Minecraft\CClass\CClass.cpp" />
-    <ClCompile Include="src\Minecraft\CInventory\CInventory.cpp" />
-    <ClCompile Include="src\Minecraft\CInventory\CSlot\CSlot.cpp" />
-    <ClCompile Include="src\Minecraft\CMinecraft\CMinecraft.cpp" />
-    <ClCompile Include="src\Minecraft\CMovingObjectPosition\CMovingObjectPosition.cpp" />
-    <ClCompile Include="src\Minecraft\CMovingObjectPosition\CMovingObjectType\CMovingObjectType.cpp" />
-    <ClCompile Include="src\Minecraft\CObject\CObject.cpp" />
-    <ClCompile Include="src\Minecraft\CPlayer\CPlayer.cpp" />
+    <ClCompile Include="src\Minecraft\CActiveRenderInfo\CActiveRenderInfo.cpp" />
+    <ClCompile Include="src\Minecraft\CCacheManager\CCacheManager.cpp" />
+    <ClCompile Include="src\Minecraft\CEntity\CEntityLivingBase\CEntityLivingBase.cpp" />
+    <ClCompile Include="src\Minecraft\CEntity\CEntityPlayer\CEntityPlayer.cpp" />
+    <ClCompile Include="src\Minecraft\CEntity\CEntity\CEntity.cpp" />
+    <ClCompile Include="src\Minecraft\CItem\CItemStack\CItemStack.cpp" />
+    <ClCompile Include="src\Minecraft\CItem\CItem\CItem.cpp" />
     <ClCompile Include="src\Minecraft\CWorld\CWorld.cpp" />
-    <ClCompile Include="src\Minecraft\Globals.cpp" />
-    <ClCompile Include="src\Minecraft\JVM\JVM.cpp" />
+    <ClCompile Include="src\Minecraft\CWorld\CWorldClient\CWorldClient.cpp" />
+    <ClCompile Include="src\Minecraft\Settings\CGameSettings.cpp" />
+    <ClCompile Include="src\Minecraft\CMinecraft\CMinecraft.cpp" />
+    <ClCompile Include="src\Java\JVM\JVM.cpp" />
     <ClCompile Include="src\Modules\FastPlace\FastPlace.cpp" />
+    <ClCompile Include="src\Modules\QuickStop\QuickStop.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Menu\fonts.h" />
+    <ClInclude Include="external\include\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="external\include\imgui\backends\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="external\include\imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="external\include\imgui\imconfig.h" />
+    <ClInclude Include="external\include\imgui\imgui.h" />
+    <ClInclude Include="external\include\imgui\imgui_internal.h" />
+    <ClInclude Include="external\include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="external\include\imgui\imstb_textedit.h" />
+    <ClInclude Include="external\include\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Helpers\CTimer.h" />
+    <ClInclude Include="src\Helpers\Math\Math.h" />
+    <ClInclude Include="src\Helpers\Singleton.h" />
+    <ClInclude Include="src\Java\CClass\CClass.h" />
+    <ClInclude Include="src\Java\CField\CField.h" />
+    <ClInclude Include="src\Java\CList\CList.h" />
+    <ClInclude Include="src\Java\CMethod\CMethod.h" />
+    <ClInclude Include="src\Java\CObject\CObject.h" />
+    <ClInclude Include="src\Menu\Fonts\Ruda\Ruda.h" />
     <ClInclude Include="src\Menu\GUI.h" />
     <ClInclude Include="src\Menu\MenuHook.h" />
-    <ClInclude Include="src\Minecraft\CClass\CClass.h" />
-    <ClInclude Include="src\Minecraft\CInventory\CInventory.h" />
-    <ClInclude Include="src\Minecraft\CInventory\CSlot\CSlot.h" />
-    <ClInclude Include="src\Minecraft\CMinecraft\CMinecraft.h" />
-    <ClInclude Include="src\Minecraft\CMovingObjectPosition\CMovingObjectPosition.h" />
-    <ClInclude Include="src\Minecraft\CMovingObjectPosition\CMovingObjectType\CMovingObjectType.h" />
-    <ClInclude Include="src\Minecraft\CObject\CObject.h" />
-    <ClInclude Include="src\Minecraft\CPlayer\CPlayer.h" />
+    <ClInclude Include="src\Minecraft\CActiveRenderInfo\CActiveRenderInfo.h" />
+    <ClInclude Include="src\Minecraft\CCacheManager\CCacheManager.h" />
+    <ClInclude Include="src\Minecraft\CEntity\CEntityLivingBase\CEntityLivingBase.h" />
+    <ClInclude Include="src\Minecraft\CEntity\CEntityPlayer\CEntityPlayer.h" />
+    <ClInclude Include="src\Minecraft\CEntity\CEntity\CEntity.h" />
+    <ClInclude Include="src\Minecraft\CItem\CItemStack\CItemStack.h" />
+    <ClInclude Include="src\Minecraft\CItem\CItem\CItem.h" />
     <ClInclude Include="src\Minecraft\CWorld\CWorld.h" />
-    <ClInclude Include="src\Minecraft\Datatypes\Vec.h" />
-    <ClInclude Include="src\Minecraft\Globals.h" />
-    <ClInclude Include="src\Minecraft\JVM\JVM.h" />
+    <ClInclude Include="src\Minecraft\CWorld\CWorldClient\CWorldClient.h" />
+    <ClInclude Include="src\Minecraft\Settings\CGameSettings.h" />
+    <ClInclude Include="src\Minecraft\CMinecraft\CMinecraft.h" />
+    <ClInclude Include="src\Java\JVM\JVM.h" />
     <ClInclude Include="src\Modules\FastPlace\FastPlace.h" />
+    <ClInclude Include="src\Modules\QuickStop\QuickStop.h" />
     <ClInclude Include="src\Modules\Modules.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,17 +1,43 @@
+/*
+* This code mostly taken from https://github.com/axxo1337/OpenGL-Hk so special thanks to axxo and his fingers:3
+
+MIT License
+
+Copyright (c) 2022 aXXo-dev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+
 #include "GUI.h"
+#include "Fonts/Ruda/Ruda.h"
+#include "MenuHook.h"
 #include "../Modules/Modules.h"
-#include "fonts.h"
+#include <gl/GL.h>
+#include <chrono>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_win32.h>
 
-static bool is_init{};
-static bool do_draw{true};
-
-bool GUI::init(HWND wnd_handle)
+void GUI::Init(HWND wnd_handle)
 {
-	if (is_init)
-		return false;
-
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
 
     io.Fonts->AddFontFromMemoryCompressedTTF(
         ruda_bold,
@@ -68,49 +94,84 @@ bool GUI::init(HWND wnd_handle)
     style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
     style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
 
-	ImGui_ImplWin32_Init(wnd_handle);
-	ImGui_ImplOpenGL3_Init();
+    ImGui_ImplWin32_Init(wnd_handle);
+    ImGui_ImplOpenGL3_Init();
 
-	is_init = true;
-
-	return false;
+    return;
 }
-void GUI::shutdown()
+void GUI::Shutdown()
 {
-	if (!is_init)
-		return;
-
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-
-	is_init = false;
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void GUI::Render()
 {
-	if (!do_draw)
-		return;
+    glLineWidth(4.0f);
+    glBegin(GL_LINES);
 
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+    int segments = 100;
+    float startX = 0.0f;
+    float endX = 2560.0f;
+    float step = (endX - startX) / segments;
 
-	ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_Once);
-	ImGui::Begin("pasteware");
+    static auto start_time = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    float time_sec = duration_cast<std::chrono::duration<float>>(now - start_time).count();
+    float hue_offset = fmod(time_sec * 0.2f, 1.0f);
 
-	for (auto& m : g_Modules)
-	{
-		m.m_RenderMenu();
-	}
+    auto hsv2rgb = [](float h, float s, float v) {
+        float r, g, b;
+        int i = int(h * 6);
+        float f = h * 6 - i;
+        float p = v * (1 - s);
+        float q = v * (1 - f * s);
+        float t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+        }
+        return std::tuple<float, float, float>{ r, g, b };
+        };
 
-	ImGui::End();
-	ImGui::EndFrame();
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
+    for (int i = 0; i < segments; ++i)
+    {
+        float t0 = (float)i / segments;
+        float t1 = (float)(i + 1) / segments;
 
-bool GUI::getIsInit()
-{
-	return is_init;
+        float h0 = fmod(hue_offset + t0, 1.0f);
+        float h1 = fmod(hue_offset + t1, 1.0f);
+
+        auto [r0, g0, b0] = hsv2rgb(h0, 1.0f, 1.0f);
+        auto [r1, g1, b1] = hsv2rgb(h1, 1.0f, 1.0f);
+
+        glColor3f(r0, g0, b0);
+        glVertex2f(startX + t0 * (endX - startX), 0.0f);
+        glColor3f(r1, g1, b1);
+        glVertex2f(startX + t1 * (endX - startX), 0.0f);
+    }
+
+    glEnd();
+
+    if (!MenuHook::doDraw)
+        return;
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_Once);
+    ImGui::Begin("ptrhack");
+
+    ModuleManager::GetInstance().RenderMenu();
+
+    ImGui::End();
+    ImGui::EndFrame();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

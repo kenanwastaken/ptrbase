@@ -1,22 +1,24 @@
 #include "FastPlace.h"
+#include <imgui.h>
 #include <iostream>
-#include <ImGui/imgui.h>
-#include <Windows.h>
-#include "../../Minecraft/Globals.h"
+#include "../../Minecraft/CCacheManager/CCacheManager.h"
 
-void MODULES::FASTPLACE::onSetup()
+void F::MISC::FASTPLACE::onSetup()
 {
+
 }
 
-void MODULES::FASTPLACE::onTick()
+void F::MISC::FASTPLACE::onTick()
 {
-	if (!enabled || !GetAsyncKeyState(VK_RBUTTON) || !GLOBALS::g_Minecraft->IsInGame()) return;
+	static CTimer ctimer(25);
 
-	GLOBALS::g_Minecraft->SetRightClickDelay(0);
+	if (!isEnabled && !ctimer.isElapsed())
+		return;
+
+	CCacheManager::GetInstance().Minecraft().SetRightClickTimer(0);
 }
 
-void MODULES::FASTPLACE::renderMenu()
+void F::MISC::FASTPLACE::onRenderMenu()
 {
-	ImGui::Checkbox("Fast Place", &enabled);
+	ImGui::Checkbox("FastPlace", &isEnabled);
 }
-

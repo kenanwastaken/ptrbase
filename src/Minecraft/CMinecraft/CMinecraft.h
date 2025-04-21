@@ -1,25 +1,23 @@
 #pragma once
-#include "../CObject/CObject.h"
-#include "../CClass/CClass.h"
-#include "../CPlayer/CPlayer.h"
-#include "../CMovingObjectPosition/CMovingObjectPosition.h"
+#include "../../Java/CObject/CObject.h"
+#include "../../Java/CClass/CClass.h"
+#include "../Settings/CGameSettings.h"
+#include "../CEntity/CEntityPlayer/CEntityPlayer.h"
+#include "../CWorld/CWorldClient/CWorldClient.h"
 
-class CMinecraft
+class CMinecraft : public CObject
 {
 public:
-	CMinecraft();
-	CMinecraft(CObject mc) : mcObj(mc) {};
+	CMinecraft(CObject minecraft_obj) : CObject(minecraft_obj) {}
 
-	CClass						GetClass();
-	CObject						GetMinecraft();
-	
-	jboolean					IsInGame();
-	CPlayer						GetLocalPlayer();
+	static CMinecraft	GetMinecraft();
+	CWorldClient		GetWorld();
+	CGameSettings		GetSettings();
 
-	jint						GetRightClickDelay();
-	void						SetRightClickDelay(jint delay);
-	CMovingObjectPosition		GetObjectMouseOver();
+	CEntityPlayer		GetLocalPlayer();
+
+	jint GetRightClickTimer();
+	void SetRightClickTimer(jint delay);
 private:
-	CObject mcObj	= nullptr;
-	CClass	mcClass = CClass("net.minecraft.client.Minecraft");
+	CClass m_Class = CClass("net.minecraft.client.Minecraft");
 };

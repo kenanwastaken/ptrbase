@@ -1,11 +1,10 @@
 #include "CWorld.h"
-#include "../JVM/JVM.h"
-	
-std::vector<CPlayer> CWorld::GetPlayerList()
+#include "../../Java/CField/CField.h"
+
+CList CWorld::GetPlayerEntities()
 {
-	std::vector<CPlayer> players;
+	if (!isValid())
+		return CList(NULL);
 
-	jmethodID EntityFieldID = g_JVM->m_Env->GetMethodID(m_WorldClass.Class(), "getLoadedEntityList", "()Ljava/util/List;");
-
-	return players;
+	return CList(CField(GetObj(), m_Class.GetFieldID("playerEntities", "Ljava/util/List;")).GetObject());
 }

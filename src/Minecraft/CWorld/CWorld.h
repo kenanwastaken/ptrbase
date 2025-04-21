@@ -1,19 +1,14 @@
 #pragma once
+#include "../CEntity/CEntityPlayer/CEntityPlayer.h"
+#include "../../Java/CList/CList.h"
 
-#include "../CObject/CObject.h"
-#include "../CClass/CClass.h"
-#include "../CPlayer/CPlayer.h"
-#include <vector>
-
-class CWorld
+class CWorld : public CObject
 {
 public:
-	CWorld(CObject world) : m_World(world) {}
+	CWorld(CObject world) : CObject(world) {}
 
-	CObject Instance() { return m_World; };
+	CList GetPlayerEntities();
 
-	std::vector<CPlayer> GetPlayerList();
 private:
-	CObject m_World;
-	CClass	m_WorldClass = CClass("net.minecraft.world.World");
+	CClass m_Class = CClass("net.minecraft.world.World");
 };

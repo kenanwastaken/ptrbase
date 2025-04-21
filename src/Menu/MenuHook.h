@@ -2,25 +2,14 @@
 #define HOOK_H_
 
 #include <Windows.h>
+#include <gl/GL.h>
 
-class MenuHook
+namespace MenuHook
 {
-	bool Init();
-	void Shutdown();
-	bool IsInit() { return isInitilaized; }
+	inline bool doDraw = false;
 
-private:
-	typedef BOOL(__stdcall* tWglSwapBuffer) (HDC hDc);
-	static tWglSwapBuffer o_tWglSwapBuffer;
-
-	static HWND WndHandle;
-	static WNDPROC oWndProc;
-	void* pSwapBuffers;
-
-	bool isInitilaized;
-
-	static LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static bool __stdcall wglSwapBuffers(HDC hDc);
-};
+	void Enable();
+	void Disable();
+}
 
 #endif

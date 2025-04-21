@@ -1,10 +1,11 @@
 #pragma once
+#include "../../Helpers/CTimer.h"
 
-namespace MODULES::FASTPLACE
+namespace F::MISC::FASTPLACE
 {
-	inline bool enabled = false;
+	inline bool isEnabled = true;
 
 	void onSetup();
 	void onTick();
-	void renderMenu();
+	void onRenderMenu();
 }
