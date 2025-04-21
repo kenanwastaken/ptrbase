@@ -1,5 +1,5 @@
 ﻿/*
-* This code mostly taken from https://github.com/axxo1337/OpenGL-Hk so special thanks to axxo and his fingers:3
+* This code taken from https://github.com/axxo1337/OpenGL-Hk so special thanks to axxo and his fingers:3
 
 MIT License
 
@@ -26,65 +26,82 @@ SOFTWARE.
 */
 
 #include <MinHook.h>
+#include <gl/GL.h>
+
 #include "MenuHook.h"
 #include "GUI.h"
-#include <tuple>
-#include <chrono>
 
 typedef BOOL(__stdcall* TWglSwapBuffers) (HDC hDc);
 
-bool isEnabled = false;
-HWND WndHandle;
-WNDPROC oWndProc{};
-void* pSwapBuffers{};
-TWglSwapBuffers oWglSwapBuffers{};
+static bool is_init{};
+static HWND wnd_handle{};
+static WNDPROC origin_wndproc{};
+void* p_swap_buffers{};
+TWglSwapBuffers origin_wglSwapBuffers{};
 
 static LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static bool __stdcall hkWglSwapBuffers(HDC hDc);
+static bool __stdcall wglSwapBuffers(HDC hDc);
 
-void MenuHook::Enable()
+//
+// Management functions
+//
+
+void MenuHook::Init()
 {
-	WndHandle = FindWindowA("LWJGL", nullptr);
-	oWndProc = (WNDPROC)SetWindowLongPtrW(WndHandle, GWLP_WNDPROC, (LONG_PTR)WndProc);
+	if (is_init)
+		return;
+
+	wnd_handle = FindWindowA("LWJGL", nullptr);
+	origin_wndproc = (WNDPROC)SetWindowLongPtrW(wnd_handle, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
 	MH_Initialize();
+	p_swap_buffers = (void*)GetProcAddress(GetModuleHandleA("opengl32.dll"), "wglSwapBuffers");
 
-	pSwapBuffers = (void*)GetProcAddress(GetModuleHandleA("opengl32.dll"), "wglSwapBuffers");
-
-	MH_CreateHook(pSwapBuffers, &hkWglSwapBuffers, (LPVOID*)&oWglSwapBuffers);
+	MH_CreateHook(p_swap_buffers, &wglSwapBuffers, (LPVOID*)&origin_wglSwapBuffers);
 	MH_EnableHook(MH_ALL_HOOKS);
 
-	return;
+	is_init = true;
 }
 
-void MenuHook::Disable()
+void MenuHook::Shutdown()
 {
-	SetWindowLongPtrW(WndHandle, GWLP_WNDPROC, (LONG_PTR)oWndProc);
+	if (!is_init)
+		return;
+
+	SetWindowLongPtrW(wnd_handle, GWLP_WNDPROC, (LONG_PTR)origin_wndproc);
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_RemoveHook(MH_ALL_HOOKS);
+
+	is_init = false;
 }
+
+bool MenuHook::getIsInit()
+{
+	return is_init;
+}
+
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (msg == WM_KEYDOWN && wParam == VK_INSERT)
-		MenuHook::doDraw = !MenuHook::doDraw;
+		GUI::doDraw = !GUI::doDraw;
 
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+	if (GUI::doDraw && ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
 
-	return CallWindowProcA(oWndProc, hWnd, msg, wParam, lParam);
+	return CallWindowProcA(origin_wndproc, hWnd, msg, wParam, lParam);
 }
 
-bool __stdcall hkWglSwapBuffers(HDC hDc)
+bool __stdcall wglSwapBuffers(HDC hDc)
 {
-	HGLRC oContext = wglGetCurrentContext();
-	static HGLRC nContext;
+	HGLRC origin_context{ wglGetCurrentContext() };
+	static HGLRC new_context{};
 
-	if (static bool was_init = false; was_init == false)
+	if (static bool was_init{}; was_init == false)
 	{
-		nContext = wglCreateContext(hDc);
-		wglMakeCurrent(hDc, nContext);
+		new_context = wglCreateContext(hDc);
+		wglMakeCurrent(hDc, new_context);
 
 		GLint viewport[4];
 		glGetIntegerv(GL_VIEWPORT, viewport);
@@ -96,16 +113,17 @@ bool __stdcall hkWglSwapBuffers(HDC hDc)
 		glLoadIdentity();
 		glDisable(GL_DEPTH_TEST);
 
-		GUI::Init(WndHandle);
+		GUI::Init(wnd_handle);
 
 		was_init = true;
 	}
 	else
 	{
-		wglMakeCurrent(hDc, nContext);
+		wglMakeCurrent(hDc, new_context);
 		GUI::Render();
 	}
-	
-	wglMakeCurrent(hDc, oContext);
-	return oWglSwapBuffers(hDc);
+
+	wglMakeCurrent(hDc, origin_context);
+
+	return origin_wglSwapBuffers(hDc);
 }

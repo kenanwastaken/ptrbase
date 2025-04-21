@@ -6,9 +6,10 @@
 
 namespace GUI
 {
+	inline bool doDraw = true;
+
 	void Init(HWND wnd_handle);
 	void Shutdown();
-
 	void Render();
 }
 

@@ -12,7 +12,7 @@
 
 void __stdcall MainThread(HINSTANCE hInstance)
 {
-    MenuHook::Enable();
+    MenuHook::Init();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -35,7 +35,7 @@ void __stdcall MainThread(HINSTANCE hInstance)
             m->Toggle();
     }
 
-    MenuHook::Disable();
+    MenuHook::Shutdown();
 
     FreeLibrary(hInstance);
 }

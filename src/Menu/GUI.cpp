@@ -158,7 +158,7 @@ void GUI::Render()
 
     glEnd();
 
-    if (!MenuHook::doDraw)
+    if (!doDraw)
         return;
 
     ImGui_ImplOpenGL3_NewFrame();

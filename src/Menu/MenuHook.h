@@ -6,10 +6,10 @@
 
 namespace MenuHook
 {
-	inline bool doDraw = false;
+	void Init();
+	void Shutdown();
 
-	void Enable();
-	void Disable();
+	bool getIsInit();
 }
 
 #endif
