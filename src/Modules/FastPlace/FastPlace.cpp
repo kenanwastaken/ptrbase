@@ -10,9 +10,7 @@ void F::MISC::FASTPLACE::onSetup()
 
 void F::MISC::FASTPLACE::onTick()
 {
-	static CTimer ctimer(25);
-
-	if (!isEnabled && !ctimer.isElapsed())
+	if (!isEnabled)
 		return;
 
 	CCacheManager::GetInstance().Minecraft().SetRightClickTimer(0);

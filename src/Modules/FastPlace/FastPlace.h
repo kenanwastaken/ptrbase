@@ -3,7 +3,7 @@
 
 namespace F::MISC::FASTPLACE
 {
-	inline bool isEnabled = true;
+	inline bool isEnabled;
 
 	void onSetup();
 	void onTick();
