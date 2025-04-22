@@ -1,6 +1,8 @@
-# PtrHack
+# ptrbase
 
-**PtrHack** is a custom Minecraft client designed for Lunar Client 1.8.9. It comes with a lightweight SDK and a modular system, tailored for enhancing the in-game experience.
+> *ptrbase meant to be a SDK (base) for Minecraft, its not a hacked client.*
+
+**ptrbase** is a custom lightweight SDK designed for Lunar Client 1.8.9. It comes with a modular system, tailored for enhancing the in-game experience.
 
 ---
 
