@@ -25,7 +25,7 @@ void F::MOVEMENT::QUICKSTOP::onTick()
         auto player = CCacheManager::GetInstance().Minecraft().GetLocalPlayer();
 
         double motionX = player.GetMotion().GetX();
-        double motionZ = player.GetMotion().GetY();
+        double motionZ = player.GetMotion().GetZ();
 
         float factorRatio = factor / 100.0f;
         motionX -= motionX * factorRatio;
